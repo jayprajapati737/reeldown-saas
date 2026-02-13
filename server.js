@@ -170,7 +170,7 @@ process.on('SIGTERM', () => {
 
 // Start server
 const server = app.listen(PORT, () => {
-    console.log(`\n🚀 Reel Downloader SaaS API v2.0`);
+    console.log(`\n🚀 Reel Downloader SaaS API v2.0 - DEPLOYMENT CHECK: ${new Date().toISOString()}`);
     console.log(`📦 Environment: ${NODE_ENV}`);
     console.log(`🌐 Server: http://localhost:${PORT}`);
     console.log(`🔒 Rate limit: ${process.env.RATE_LIMIT_MAX || 100} requests per 15 minutes`);
