@@ -131,7 +131,7 @@
         }
 
         async function loadAnalytics() {
-            const res = await fetch("http://localhost:5000/api/admin/analytics", {
+            const res = await fetch("/api/admin/analytics", {
                 headers: {
                     Authorization: "Bearer " + token
                 }
@@ -173,7 +173,7 @@
         }
 
         async function loadUsers() {
-            const res = await fetch("http://localhost:5000/api/admin/users", {
+            const res = await fetch("/api/admin/users", {
                 headers: {
                     Authorization: "Bearer " + token
                 }
@@ -220,7 +220,7 @@
                 if (!confirmDisable) return;
             }
 
-            const res = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+            const res = await fetch(`/api/admin/users/${userId}`, {
                 method: "DELETE",
                 headers: {
                     Authorization: "Bearer " + token
@@ -239,7 +239,7 @@
 
         async function loadDisabledUsers() {
             try {
-                const res = await fetch("http://localhost:5000/api/admin/users/disabled", {
+                const res = await fetch("/api/admin/users/disabled", {
                     headers: {
                         Authorization: "Bearer " + token
                     }
@@ -280,7 +280,7 @@
             const confirmRestore = confirm("Are you sure you want to restore this user?");
             if (!confirmRestore) return;
 
-            const res = await fetch(`http://localhost:5000/api/admin/users/${userId}/restore`, {
+            const res = await fetch(`/api/admin/users/${userId}/restore`, {
                 method: "PUT",
                 headers: {
                     Authorization: "Bearer " + token

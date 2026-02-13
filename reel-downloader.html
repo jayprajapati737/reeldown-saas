@@ -631,7 +631,7 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:5000/api'; // Updated API base URL
+        const API_URL = window.location.origin + '/api'; // Updated API base URL
         const reelLinkInput = document.getElementById('reelLink');
         const downloadBtn = document.getElementById('downloadBtn');
         const errorMessage = document.getElementById('errorMessage');
