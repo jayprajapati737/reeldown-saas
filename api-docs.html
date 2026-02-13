@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation - ReelDown</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --dark: #0f172a;
+            --dark-light: #1e293b;
+            --gray: #64748b;
+            --light: #f1f5f9;
+            --white: #ffffff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--dark);
+            color: var(--white);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--gray);
+        }
+
+        .api-section {
+            background: var(--dark-light);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: var(--light);
+            text-transform: capitalize;
+        }
+
+        .endpoint-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary);
+            transition: transform 0.2s;
+        }
+
+        .endpoint-card:hover {
+            transform: translateX(5px);
+        }
+
+        .method {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            margin-right: 1rem;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .method-get {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .method-post {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .method-put {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary);
+        }
+
+        .method-delete {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+
+        .path {
+            font-family: 'Consolas', monospace;
+            color: var(--light);
+            font-size: 1.1rem;
+        }
+
+        .description {
+            margin-top: 0.5rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+            padding-left: 80px;
+        }
+
+        @media (max-width: 600px) {
+            .description {
+                padding-left: 0;
+                margin-top: 1rem;
+            }
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: var(--gray);
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        #loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Home</a>
+
+        <header>
+            <h1>API Documentation</h1>
+            <p class="subtitle" id="apiVersion">Loading version...</p>
+        </header>
+
+        <div id="content">
+            <div id="loading">Loading API definitions...</div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchApiInfo() {
+            try {
+                const response = await fetch('/api/info');
+                const data = await response.json();
+
+                document.getElementById('apiVersion').textContent = `Version ${data.version} • ${data.status}`;
+                renderEndpoints(data.endpoints);
+            } catch (error) {
+                document.getElementById('content').innerHTML = `
+                    <div style="text-align: center; color: var(--error)">
+                        <h3>Error loading API info</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderEndpoints(endpoints) {
+            const container = document.getElementById('content');
+            container.innerHTML = '';
+
+            for (const [section, routes] of Object.entries(endpoints)) {
+                const sectionEl = document.createElement('div');
+                sectionEl.className = 'api-section';
+
+                let html = `
+                    <div class="section-header">
+                        <h2 class="section-title">${section}</h2>
+                    </div>
+                `;
+
+                for (const [name, pathStr] of Object.entries(routes)) {
+                    // Start parsing "METHOD /path" string
+                    const parts = pathStr.split(' ');
+                    const method = parts[0];
+                    const path = parts[1];
+                    const methodClass = `method-${method.toLowerCase()}`;
+
+                    html += `
+                        <div class="endpoint-card">
+                            <div style="display: flex; align-items: center; flex-wrap: wrap;">
+                                <span class="method ${methodClass}">${method}</span>
+                                <span class="path">${path}</span>
+                            </div>
+                            <div class="description">
+                                ${formatDescription(name)}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                sectionEl.innerHTML = html;
+                container.appendChild(sectionEl);
+            }
+        }
+
+        function formatDescription(key) {
+            // Convert camelCase to Sentence case
+            const result = key.replace(/([A-Z])/g, " $1");
+            return result.charAt(0).toUpperCase() + result.slice(1);
+        }
+
+        fetchApiInfo();
+    </script>
+</body>
+
+</html>

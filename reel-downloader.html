@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reel Downloader - Download Instagram Reels</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(26, 26, 46, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            margin: 20px 0;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #fff;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #a0a0c0;
+            font-size: 1rem;
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        .input-group label {
+            display: block;
+            color: #fff;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-wrapper input::placeholder {
+            color: #6a6a8a;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 0.875rem;
+            margin-top: 8px;
+            display: none;
+            animation: shake 0.3s ease;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .download-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .download-btn:hover::before {
+            left: 100%;
+        }
+
+        .loader {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            margin: 30px 0;
+        }
+
+        .loader.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(102, 126, 234, 0.2);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .result-section.show {
+            display: block;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-section h3 {
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .video-preview {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .video-player {
+            width: 100%;
+            max-height: 500px;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .video-link {
+            color: #667eea;
+            word-break: break-all;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .video-link:hover {
+            text-decoration: underline;
+        }
+
+        .download-link-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .download-link-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* History Section Styles */
+        .history-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .history-header h2 {
+            color: #fff;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .clear-history-btn {
+            padding: 8px 16px;
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-history-btn:hover {
+            background: rgba(255, 107, 107, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(102, 126, 234, 0.4);
+            transform: translateX(5px);
+        }
+
+        .history-item-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .history-item-url {
+            color: #a0a0c0;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 6px;
+        }
+
+        .history-item-time {
+            color: #6a6a8a;
+            font-size: 0.75rem;
+        }
+
+        .history-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .history-item-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .download-history-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+
+        .download-history-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .delete-history-btn {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .delete-history-btn:hover {
+            background: rgba(255, 107, 107, 0.3);
+            transform: scale(1.05);
+        }
+
+        .empty-history {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6a6a8a;
+        }
+
+        .empty-history-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .empty-history p {
+            font-size: 1rem;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #a0a0c0;
+            font-size: 0.875rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header p {
+                font-size: 0.9rem;
+            }
+
+            .download-btn {
+                font-size: 1rem;
+                padding: 14px;
+            }
+
+            .history-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .history-header h2 {
+                font-size: 1.3rem;
+            }
+
+            .history-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .history-item-actions {
+                width: 100%;
+            }
+
+            .history-item-btn {
+                flex: 1;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.75rem;
+            }
+
+            .input-wrapper input {
+                padding: 14px 16px;
+                font-size: 0.95rem;
+            }
+
+            .history-item {
+                padding: 12px;
+            }
+
+            .history-item-btn {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Header Styles */
+        header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .user-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+
+        .user-info {
+            display: none;
+            /* Hidden by default until logged in */
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .plan-badge {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: #ec4899;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="user-nav" id="authNav">
+            <!-- Will be populated by JS -->
+            <a href="login.html" class="nav-btn">Login</a>
+            <a href="signup.html" class="nav-btn primary">Sign Up</a>
+        </div>
+        <div class="user-info" id="userInfo">
+            <span id="userName">User</span>
+            <span class="plan-badge" id="userPlan">FREE</span>
+            <a href="dashboard.html" class="nav-btn">Dashboard</a>
+            <button onclick="logout()" class="nav-btn" style="cursor: pointer;">Logout</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Reel Downloader</h1>
+            <p>Download Instagram Reels instantly</p>
+        </div>
+
+        <div class="input-group">
+            <label for="reelLink">Paste Reel Link</label>
+            <div class="input-wrapper">
+                <input type="text" id="reelLink" placeholder="https://www.instagram.com/reel/..." autocomplete="off">
+            </div>
+            <div class="error-message" id="errorMessage">
+                Please enter a valid reel link!
+            </div>
+        </div>
+
+        <button class="download-btn" id="downloadBtn">
+            Download Reel
+        </button>
+
+        <div class="loader" id="loader">
+            <div class="spinner"></div>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <h3>✅ Reel Ready to Download</h3>
+
+            <!-- Video Preview -->
+            <div class="video-container" id="videoContainer">
+                <video class="video-player" id="videoPlayer" controls controlsList="nodownload">
+                    <source id="videoSource" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+
+            <div class="video-preview">
+                <p style="color: #a0a0c0; margin-bottom: 8px;">Download Link:</p>
+                <a href="#" class="video-link" id="videoLink" target="_blank">
+                    Click here to view/download
+                </a>
+            </div>
+            <a href="#" class="download-link-btn" id="downloadLinkBtn" download>
+                📥 Download Video
+            </a>
+        </div>
+
+        <!-- History Section -->
+        <div class="history-section" id="historySection">
+            <div class="history-header">
+                <h2>📜 Download History</h2>
+                <button class="clear-history-btn" id="clearHistoryBtn">
+                    Clear All
+                </button>
+            </div>
+            <div class="history-list" id="historyList">
+                <!-- History items will be inserted here -->
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Made with ❤️ for content creators</p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api'; // Updated API base URL
+        const reelLinkInput = document.getElementById('reelLink');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const loader = document.getElementById('loader');
+        const resultSection = document.getElementById('resultSection');
+        const videoLink = document.getElementById('videoLink');
+        const downloadLinkBtn = document.getElementById('downloadLinkBtn');
+        const historyList = document.getElementById('historyList');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+        // Auth State
+        let token = localStorage.getItem('token');
+        let user = JSON.parse(localStorage.getItem('user') || 'null');
+
+        // Initialize UI based on Auth
+        function initAuth() {
+            const authNav = document.getElementById('authNav');
+            const userInfo = document.getElementById('userInfo');
+
+            if (token && user) {
+                authNav.style.display = 'none';
+                userInfo.style.display = 'flex';
+                document.getElementById('userName').textContent = user.name;
+                document.getElementById('userPlan').textContent = user.plan || 'FREE';
+                loadHistory(); // Only load history if logged in
+            } else {
+                authNav.style.display = 'flex';
+                userInfo.style.display = 'none';
+                // Hide history section for non-logged users or show upsell
+                document.getElementById('historySection').style.display = 'none';
+            }
+        }
+
+        // Logout function
+        window.logout = function () {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.reload();
+        };
+
+        // Clear error on input
+        reelLinkInput.addEventListener('input', () => {
+            errorMessage.classList.remove('show');
+            reelLinkInput.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+        });
+
+        // Handle Enter key
+        reelLinkInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') downloadBtn.click();
+        });
+
+        // Download handler
+        downloadBtn.addEventListener('click', async () => {
+            if (!token) {
+                // Redirect to login if not authenticated
+                window.location.href = 'login.html?redirect=reel-downloader.html';
+                return;
+            }
+
+            const reelUrl = reelLinkInput.value.trim();
+
+            if (!reelUrl) {
+                showError('Please enter a reel link!');
+                return;
+            }
+
+            if (!reelUrl.includes('instagram.com/reel')) {
+                showError('Please enter a valid Instagram Reel link!');
+                return;
+            }
+
+            // Reset UI
+            if (document.getElementById('videoContainer')) {
+                document.getElementById('videoContainer').style.display = 'none';
+            }
+            resultSection.classList.remove('show');
+            loader.classList.add('show');
+            downloadBtn.disabled = true;
+            downloadBtn.textContent = 'Processing...';
+
+            try {
+                const response = await fetch(`${API_URL}/downloads`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ url: reelUrl })
+                });
+
+                const data = await response.json();
+
+                loader.classList.remove('show');
+                downloadBtn.disabled = false;
+                downloadBtn.textContent = 'Download Reel';
+
+                if (response.ok && data.status === 'success') {
+                    showResult(data.downloadUrl);
+                    loadHistory(); // Refresh history
+                    reelLinkInput.value = '';
+                } else if (response.status === 401) {
+                    logout(); // Token invalid
+                } else if (response.status === 429) {
+                    showError(data.message || 'Limit reached. Upgrade to Premium!');
+                } else {
+                    showError(data.message || 'Failed to download reel.');
+                }
+
+            } catch (error) {
+                loader.classList.remove('show');
+                downloadBtn.disabled = false;
+                downloadBtn.textContent = 'Download Reel';
+                console.error(error);
+                showError('Network error. Check if server is running.');
+            }
+        });
+
+        // History Functions
+        async function loadHistory() {
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_URL}/downloads/history?limit=5`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    renderHistory(data.data.downloads);
+                }
+            } catch (e) {
+                console.error("Failed to load history", e);
+            }
+        }
+
+        function renderHistory(items) {
+            historyList.innerHTML = '';
+            if (!items || items.length === 0) {
+                historyList.innerHTML = '<div class="empty-history"><p>No history yet</p></div>';
+                return;
+            }
+
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <div class="history-item-content">
+                        <div class="history-item-url">${item.reelUrl}</div>
+                        <div class="history-item-time">${new Date(item.timestamp).toLocaleString()}</div>
+                    </div>
+                    <div class="history-item-actions">
+                        <a href="${item.downloadUrl}" target="_blank" class="history-item-btn download-history-btn" style="text-decoration:none; display:inline-block; text-align:center;">Download</a>
+                    </div>
+                 `;
+                historyList.appendChild(div);
+            });
+        }
+
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorMessage.classList.add('show');
+            reelLinkInput.style.borderColor = '#ff6b6b';
+        }
+
+        function showResult(url) {
+            videoLink.href = url;
+            videoLink.textContent = 'Download Video'; // Shortened text
+            downloadLinkBtn.href = url;
+
+            const videoPlayer = document.getElementById('videoPlayer');
+            const videoSource = document.getElementById('videoSource');
+            const videoContainer = document.getElementById('videoContainer');
+
+            videoSource.src = url;
+            videoPlayer.load();
+            videoContainer.style.display = 'block';
+            resultSection.classList.add('show');
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Remove local history clearing as it's now server-side or not implemented
+        if (clearHistoryBtn) clearHistoryBtn.style.display = 'none';
+
+        // Run Init
+        // Run Init
+        document.addEventListener('DOMContentLoaded', initAuth);
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+            if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
+            return date.toLocaleDateString();
+        }
+
+        function downloadFromHistory(url) {
+            window.open(url, '_blank');
+        }
+
+        function deleteHistoryItem(id) {
+            // This function seems to rely on local storage which might be outdated
+            // But preserving it for now as it was in the original code
+            const history = getHistory();
+            const filteredHistory = history.filter(item => item.id !== id);
+            localStorage.setItem('reelDownloadHistory', JSON.stringify(filteredHistory));
+            loadHistory();
+        }
+    </script>
+</body>
+
+</html>

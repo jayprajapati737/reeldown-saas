@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Admin Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .cards {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #333;
+            color: white;
+        }
+
+        canvas {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Admin Dashboard</h1>
+
+    <div class="cards">
+        <div class="card">
+            <h3>Total Users</h3>
+            <h2 id="totalUsers">0</h2>
+        </div>
+
+        <div class="card">
+            <h3>Total Downloads</h3>
+            <h2 id="totalDownloads">0</h2>
+        </div>
+
+        <div class="card">
+            <h3>Signups Today</h3>
+            <h2 id="signupToday">0</h2>
+        </div>
+    </div>
+
+    <canvas id="downloadChart"></canvas>
+
+    <h2>Top Users</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Downloads</th>
+                <th>Plan</th>
+            </tr>
+        </thead>
+        <tbody id="topUsersTable"></tbody>
+    </table>
+
+    <h2>All Users</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Plan</th>
+                <th>Downloads Used</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="allUsersTable"></tbody>
+    </table>
+
+    <h2>Disabled Users</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Plan</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="disabledUsersTable"></tbody>
+    </table>
+
+    <script>
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            alert("Not logged in");
+            window.location.href = "/";
+        }
+
+        async function loadAnalytics() {
+            const res = await fetch("http://localhost:5000/api/admin/analytics", {
+                headers: {
+                    Authorization: "Bearer " + token
+                }
+            });
+
+            const data = await res.json();
+
+            document.getElementById("totalUsers").innerText = data.data.users.total;
+            document.getElementById("totalDownloads").innerText = data.data.downloads.total;
+            document.getElementById("signupToday").innerText = data.data.signups.today;
+
+            // Chart
+            const labels = data.data.charts.downloadsByDay.map(d => d._id);
+            const counts = data.data.charts.downloadsByDay.map(d => d.count);
+
+            new Chart(document.getElementById("downloadChart"), {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Downloads",
+                        data: counts
+                    }]
+                }
+            });
+
+            // Top Users
+            const topUsersTable = document.getElementById("topUsersTable");
+            data.data.charts.topUsers.forEach(user => {
+                topUsersTable.innerHTML += `
+                <tr>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.downloadCount}</td>
+                    <td>${user.plan}</td>
+                </tr>
+            `;
+            });
+        }
+
+        async function loadUsers() {
+            const res = await fetch("http://localhost:5000/api/admin/users", {
+                headers: {
+                    Authorization: "Bearer " + token
+                }
+            });
+
+            const data = await res.json();
+
+            const table = document.getElementById("allUsersTable");
+
+            data.data.users.forEach(user => {
+                table.innerHTML += `
+                    <tr>
+                        <td>${user.name}</td>
+                        <td>${user.email}</td>
+                        <td><span style="background: ${getRoleBadgeColor(user.role)}; padding: 4px 8px; border-radius: 4px; color: white; font-size: 12px;">${user.role.toUpperCase()}</span></td>
+                        <td>${user.plan}</td>
+                        <td>${user.downloadsUsed}</td>
+                        <td>
+                            <button onclick="disableUser('${user._id}', '${user.role}')" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                Disable
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function getRoleBadgeColor(role) {
+            const colors = {
+                'superadmin': '#dc2626',
+                'admin': '#ea580c',
+                'moderator': '#2563eb',
+                'user': '#64748b'
+            };
+            return colors[role] || '#64748b';
+        }
+
+        async function disableUser(userId, userRole) {
+            if (userRole === 'superadmin') {
+                const confirmDisable = confirm("⚠️ WARNING: You are about to disable a SUPERADMIN account.\n\nA recovery email will be sent to the user.\n\nAre you sure you want to proceed?");
+                if (!confirmDisable) return;
+            } else {
+                const confirmDisable = confirm("Are you sure you want to disable this user?");
+                if (!confirmDisable) return;
+            }
+
+            const res = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: "Bearer " + token
+                }
+            });
+
+            const data = await res.json();
+
+            if (data.status === "success") {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert("Error: " + data.message);
+            }
+        }
+
+        async function loadDisabledUsers() {
+            try {
+                const res = await fetch("http://localhost:5000/api/admin/users/disabled", {
+                    headers: {
+                        Authorization: "Bearer " + token
+                    }
+                });
+
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    const table = document.getElementById("disabledUsersTable");
+
+                    if (data.data.users.length === 0) {
+                        table.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748b;">No disabled users</td></tr>';
+                        return;
+                    }
+
+                    data.data.users.forEach(user => {
+                        table.innerHTML += `
+                            <tr style="background: #fee2e2;">
+                                <td>${user.name}</td>
+                                <td>${user.email}</td>
+                                <td><span style="background: ${getRoleBadgeColor(user.role)}; padding: 4px 8px; border-radius: 4px; color: white; font-size: 12px;">${user.role.toUpperCase()}</span></td>
+                                <td>${user.plan}</td>
+                                <td>
+                                    <button onclick="restoreUser('${user._id}')" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                        Restore
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading disabled users:', error);
+            }
+        }
+
+        async function restoreUser(userId) {
+            const confirmRestore = confirm("Are you sure you want to restore this user?");
+            if (!confirmRestore) return;
+
+            const res = await fetch(`http://localhost:5000/api/admin/users/${userId}/restore`, {
+                method: "PUT",
+                headers: {
+                    Authorization: "Bearer " + token
+                }
+            });
+
+            const data = await res.json();
+
+            if (data.status === "success") {
+                alert("User restored successfully");
+                location.reload();
+            } else {
+                alert("Error: " + data.message);
+            }
+        }
+
+        loadAnalytics();
+        loadUsers();
+        loadDisabledUsers();
+    </script>
+
+</body>
+
+</html>
