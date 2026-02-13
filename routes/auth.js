@@ -240,7 +240,7 @@ router.post('/forgot-password', async (req, res) => {
         user.passwordResetExpires = Date.now() + 15 * 60 * 1000; // 15 mins
         await user.save();
 
-        const resetURL = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/reset-password.html?token=${resetToken}`;
+        const resetURL = `${process.env.FRONTEND_URL || 'https://reeldown-saas-production.up.railway.app'}/reset-password.html?token=${resetToken}`;
 
         const message = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

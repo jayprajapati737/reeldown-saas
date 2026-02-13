@@ -172,11 +172,11 @@ process.on('SIGTERM', () => {
 const server = app.listen(PORT, () => {
     console.log(`\n🚀 Reel Downloader SaaS API v2.0 - DEPLOYMENT CHECK: ${new Date().toISOString()}`);
     console.log(`📦 Environment: ${NODE_ENV}`);
-    console.log(`🌐 Server: http://localhost:${PORT}`);
+    console.log(`🌐 Server: https://reeldown-saas-production.up.railway.app`);
     console.log(`🔒 Rate limit: ${process.env.RATE_LIMIT_MAX || 100} requests per 15 minutes`);
     console.log(`\n📥 Endpoints:`);
-    console.log(`   Auth: http://localhost:${PORT}/api/auth`);
-    console.log(`   Downloads: http://localhost:${PORT}/api/downloads`);
-    console.log(`   Admin: http://localhost:${PORT}/api/admin`);
+    console.log(`   Auth: https://reeldown-saas-production.up.railway.app/api/auth`);
+    console.log(`   Downloads: https://reeldown-saas-production.up.railway.app/api/downloads`);
+    console.log(`   Admin: https://reeldown-saas-production.up.railway.app/api/admin`);
     console.log(`\n⚠️  Make sure yt-dlp is installed and MongoDB is running!`);
 });

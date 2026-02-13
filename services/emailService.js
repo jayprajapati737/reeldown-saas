@@ -23,7 +23,7 @@ const generateRecoveryToken = () => {
 const sendRecoveryEmail = async (user, recoveryToken) => {
     const transporter = createTransporter();
 
-    const recoveryLink = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/recovery?token=${recoveryToken}`;
+    const recoveryLink = `${process.env.FRONTEND_URL || 'https://reeldown-saas-production.up.railway.app'}/recovery?token=${recoveryToken}`;
 
     const mailOptions = {
         from: `"ReelDown Admin" <${process.env.EMAIL_USER}>`,
