@@ -1,0 +1,9 @@
+# Nixpacks configuration for Railway
+[phases.setup]
+nixPkgs = ["nodejs", "yt-dlp", "ffmpeg", "python3"]
+
+[phases.build]
+cmds = ["npm ci"]
+
+[start]
+cmd = "npm start"
