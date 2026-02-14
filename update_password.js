@@ -12,7 +12,7 @@ mongoose.connect(process.env.MONGODB_URI)
 
 async function updatePassword() {
     try {
-        const email = 'jaykuma809254@gmail.com';
+        const email = 'reelworld@gmail.com';
         const newPassword = process.env.ADMIN_PASSWORD;
 
         if (!newPassword) {
