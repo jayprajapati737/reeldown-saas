@@ -1,0 +1,24 @@
+
+--- Searching by EMAIL: 'jaykuma809254@gmail.com' ---
+Found 1 user(s) by email.
+
+[By Email] User 1:
+   ID: 698c8c9cc0f67c1a2c798cd2
+   Name: 'Jay Prajapati'
+   Email: 'jaykuma809254@gmail.com' (Length: 23)
+   Role: superadmin
+   Plan: premium
+
+--- Searching by NAME: 'Jay Prajapati' ---
+Found 1 user(s) by name.
+
+[By Name] User 1:
+   ID: 698c8c9cc0f67c1a2c798cd2
+   Name: 'Jay Prajapati'
+   Email: 'jaykuma809254@gmail.com'
+   Role: superadmin
+
+--- Checking for potential duplicates ---
+Found 2 users with 'jaykuma' in email:
+ - jaykuma809254@email.com (superadmin) ID: 698c75f9968ae3fd623a5f8b
+ - jaykuma809254@gmail.com (superadmin) ID: 698c8c9cc0f67c1a2c798cd2
